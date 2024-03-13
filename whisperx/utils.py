@@ -195,11 +195,11 @@ class ResultWriter:
     def __init__(self, output_dir: str):
         self.output_dir = output_dir
 
-    def __call__(self, result: dict, audio_path: str, options: dict):
+    def __call__(self, result: dict, audio_path: str, options: dict, name: str):
         audio_basename = os.path.basename(audio_path)
         audio_basename = os.path.splitext(audio_basename)[0]
         output_path = os.path.join(
-            self.output_dir, audio_basename + "." + self.extension
+            self.output_dir, audio_basename + name + "." + self.extension
         )
 
         with open(output_path, "w", encoding="utf-8") as f:
