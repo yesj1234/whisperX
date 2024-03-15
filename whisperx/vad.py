@@ -17,7 +17,7 @@ from .diarize import Segment as SegmentX
 
 VAD_SEGMENTATION_URL = "https://whisperx.s3.eu-west-2.amazonaws.com/model_weights/segmentation/0b5b3216d60a2d32fc086b47ea8c67589aaeb26b7e07fcbe620d6d0b83e209ea/pytorch_model.bin"
 
-def load_vad_model(device, vad_onset=0.500, vad_offset=0.363, use_auth_token=None, model_fp=None):
+def load_vad_model(device, vad_onset=0.500, vad_offset=0.363, use_auth_token=None, model_fp=None, **kwargs):
     model_dir = torch.hub._get_torch_home()
     os.makedirs(model_dir, exist_ok = True)
     if model_fp is None:
@@ -52,7 +52,8 @@ def load_vad_model(device, vad_onset=0.500, vad_offset=0.363, use_auth_token=Non
     hyperparameters = {"onset": vad_onset, 
                     "offset": vad_offset,
                     "min_duration_on": 0.1,
-                    "min_duration_off": 0.1}
+                    "min_duration_off": 0.1,
+                    }
     vad_pipeline = VoiceActivitySegmentation(segmentation=vad_model, device=torch.device(device))
     vad_pipeline.instantiate(hyperparameters)
 

@@ -1,4 +1,6 @@
+from typing import NamedTuple
 import os 
+import traceback 
 
 import torch 
 
@@ -6,9 +8,6 @@ from whisperx.asr import load_model
 from whisperx.audio import load_audio 
 from whisperx.utils import WriteVTT 
 
-
-
-    
     
 DEFAULT_ASR_OPTIONS = {
     "beam_size": 5,
@@ -39,20 +38,26 @@ DEFAULT_ASR_OPTIONS = {
 }
 DEFAULT_VAD_OPTIONS = {
     "vad_offset": 0.363,
-    "vad_onset": 0.500
+    "vad_onset": 0.500,
+    "chunk_size": 30
 }
 
 def parse_options(options, default: NamedTuple=None):
+    for k, v in default.items():
+        if not options.get(k):
+            options[k] = default[k]
     updated = {k: v for k, v in default.items()}
     updated.update(options)
+            
     changed = {}
     change_count = 0
-    for (k1, v1), (k2, v2) for zip(default.items(), updated.items()):
+    for (k1, v1), (k2, v2) in zip(default.items(), updated.items()):
         if v1 != v2:
             changed[k2] = v2 
             change_count += 1
     if change_count > 1: 
-        raise ValueError(f"Changing multiple options is not yet implemented. Only one option should be changed to compare.\n Changed options are: {k for k in changed.keys()}")
+        print(change_count)
+        raise ValueError(f"Changing multiple options is not yet implemented. Only one option should be changed to compare.")
     return updated, changed
 
      
@@ -74,7 +79,8 @@ def compare(args, chunk_size=30):
     asr_options, changed_asr_options = parse_options(asr_options, DEFAULT_ASR_OPTIONS)
     vad_options = {"chunk_size": chunk_size} # TODO: pass vad options via argparse args. or any other mean. 
     vad_options, changed_vad_options = parse_options(vad_options, DEFAULT_VAD_OPTIONS)
-        
+    del vad_options["chunk_size"] 
+           
     # 2. load the FW pipeline with the loaded options 
     whisper_arch = args.whisper_arch
     device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -95,16 +101,21 @@ def compare(args, chunk_size=30):
                 basename, ext = os.path.splitext(file)
                 if ext == ".wav":
                     try:
-                        audio = load_audio(os.path.join(prefix, file))
-                        result = model.transcribe(audio, language=language)
+                        audio_path = os.path.join(prefix, file)
+                        audio = load_audio(audio_path)
+                        result = model.transcribe(audio, language=language, chunk_size=chunk_size)
                         # make output dir based on the audio sample name and current hyperparameter and initiate the writer.
-                        output_dir = os.path.join(args.output_dir, basename, changed_vad_options.keys()[0]) 
+                        output_dir = os.path.join(args.output_dir, basename, list(changed_vad_options.keys())[0]) 
                         if not os.path.exists(output_dir):
                             os.makedirs(output_dir, exist_ok=True)
                         #TODO: currently name is oriented only from vad_options. Change this to get options from asr too and combine them. 
-                        WriteVTT(output_dir=output_dir)(result=result, options=write_options, name=changed_vad_options.values()[0])
+                        name = str(list(changed_vad_options.values())[0]) or "30"
+                        print(name)
+                        WriteVTT(output_dir=output_dir)(result=result, audio_path=audio_path, options=write_options, name=name)
                     except Exception as e:
+                        traceback.print_tb(e.__traceback__)
                         print(e)
+                        
                 
 
 
