@@ -36,11 +36,20 @@ DEFAULT_ASR_OPTIONS = {
     "clip_timestamps": None,
     "hallucination_silence_threshold": None,
 }
+
 DEFAULT_VAD_OPTIONS = {
     "vad_offset": 0.363,
     "vad_onset": 0.500,
-    "chunk_size": 30
 }
+
+DEFAULT_VTT_OPTIONS = {
+    "max_line_width": 1000,
+    "max_line_count": 100,
+    "highlight_words": False,
+}
+
+        
+
 
 def parse_options(options, default: NamedTuple=None):
     for k, v in default.items():
@@ -60,32 +69,19 @@ def parse_options(options, default: NamedTuple=None):
         raise ValueError(f"Changing multiple options is not yet implemented. Only one option should be changed to compare.")
     return updated, changed
 
-     
 
-#TODO: currently this compare function is only working on chunk size option from vad options. change this to accept asr options and other vad options too. 
 def compare(args, chunk_size=30): 
-    # for n audio samples, compare different vad options(asr options) to find optimal transcription result for the audio samples. 
-    # args.output_dir is the base path folder for all the generated vtt files. 
-    # transcribed vtt files should be placed as follows
-    # args.output_dir / audio_basename / chunk_size(e.g.) / [param_value1].vtt, [param_value2].vtt ...etc 
-    
-    # Approach 1. Load the FW pipeline and loop through the audio samples. 
-    # Approach 2. For a single audio file load(loop) the FW pipeline for each vad options. 
-    # For a small dataset and small number of hyperparameters Approach2 looks efficient 
-    # But for a large dataset (for more than 100 audio samples) Approach1 looks much more effiecient. -> Approach1 Selected!
-
-    # 1. parse the passed options.
-    asr_options = {} # TODO: pass asr options via argparse args. or any other mean. 
-    asr_options, changed_asr_options = parse_options(asr_options, DEFAULT_ASR_OPTIONS)
-    vad_options = {"chunk_size": chunk_size} # TODO: pass vad options via argparse args. or any other mean. 
-    vad_options, changed_vad_options = parse_options(vad_options, DEFAULT_VAD_OPTIONS)
-    del vad_options["chunk_size"] 
-           
     # 2. load the FW pipeline with the loaded options 
     whisper_arch = args.whisper_arch
     device = "cuda" if torch.cuda.is_available() else "cpu"
     compute_type = "float16" if device == "cuda" else "int8"
     language = args.language 
+    asr_options = DEFAULT_ASR_OPTIONS
+    vad_options = DEFAULT_VAD_OPTIONS
+
+    vad_options["vad_offset"] = args.vad_offset
+    vad_options["vad_onset"] = args.vad_onset
+    
     model = load_model(whisper_arch, device=device, compute_type=compute_type, asr_options=asr_options, vad_options=vad_options)
     
     # 3. loop through audio samples 
@@ -99,18 +95,18 @@ def compare(args, chunk_size=30):
             prefix = os.path.abspath(root)
             for file in files:
                 basename, ext = os.path.splitext(file)
-                if ext == ".wav":
+                if ext == ".wav" and basename == "music_3":
                     try:
                         audio_path = os.path.join(prefix, file)
                         audio = load_audio(audio_path)
-                        result = model.transcribe(audio, language=language, chunk_size=chunk_size)
+                        result = model.transcribe(audio, language=language, chunk_size=chunk_size, print_progress=args.print_progress)
                         # make output dir based on the audio sample name and current hyperparameter and initiate the writer.
-                        output_dir = os.path.join(args.output_dir, basename, list(changed_vad_options.keys())[0]) 
+                        output_dir_name = "chunk_size" 
+                        output_dir = os.path.join(args.output_dir, basename, output_dir_name) 
                         if not os.path.exists(output_dir):
                             os.makedirs(output_dir, exist_ok=True)
-                        #TODO: currently name is oriented only from vad_options. Change this to get options from asr too and combine them. 
-                        name = str(list(changed_vad_options.values())[0]) or "30"
-                        print(name)
+                        name = "_"+str(chunk_size)
+                        print(os.path.join(output_dir, file))
                         WriteVTT(output_dir=output_dir)(result=result, audio_path=audio_path, options=write_options, name=name)
                     except Exception as e:
                         traceback.print_tb(e.__traceback__)
@@ -125,11 +121,14 @@ if __name__ == "__main__":
     ## model options 
     parser.add_argument("--whisper_arch", default="large-v3", type=str)
     parser.add_argument("--language", default="ko", type=str)
+    parser.add_argument("--print_progress", default=True, type=bool)
     ## wav options 
     parser.add_argument("--samples", type=str, help="folder path of sample wavs.")
     
     ## vad options 
     parser.add_argument("--chunk_size", default=False, type=bool)
+    parser.add_argument("--vad_offset", default=0.363, type=float)    
+    parser.add_argument("--vad_onset", default=0.5, type=float)
     
     ## vtt write options
     parser.add_argument("--output_dir", default="/home/ubuntu/", type=str)
@@ -140,4 +139,3 @@ if __name__ == "__main__":
         chunk_sizes = [i for i in range(5, 31, 5)]
         for chunk_size in chunk_sizes:
             compare(args, chunk_size=chunk_size)
-    
