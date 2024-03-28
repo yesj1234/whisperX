@@ -107,7 +107,17 @@ LANGUAGES = {
     "su": "sundanese",
     "yue": "cantonese",
 }
-
+GHOST_PATTERNS = [
+    "이 시각 세계였습니다.",
+    "MBC 뉴스 김성현입니다.",
+    "지금까지 뉴스 스토리였습니다.",
+    "시청해주셔서 감사합니다.",
+    "날씨였습니다.",
+    "자막 제공 배달의민족",
+    "제작지원 자막 제작지원",
+    "이 노래는 제가 부르는 노래입니다.",
+    "아이유의 러브게임"
+]
 # language code lookup by name, with a few language aliases
 TO_LANGUAGE_CODE = {
     **{language: code for code, language in LANGUAGES.items()},
@@ -198,11 +208,11 @@ class ResultWriter:
     def __call__(self, result: dict, audio_path: str, options: dict, name: str):
         audio_basename = os.path.basename(audio_path)
         audio_basename = os.path.splitext(audio_basename)[0]
-        
         output_path = os.path.join(
             self.output_dir, audio_basename + name + "." + self.extension
         )
-
+        if not os.path.exists(self.output_dir):
+            os.makedirs(self.output_dir, exist_ok=True)
         with open(output_path, "w", encoding="utf-8") as f:
             self.write_result(result, file=f, options=options)
 
