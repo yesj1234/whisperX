@@ -53,7 +53,7 @@ def vad_only(args):
     asr_chunk_size = args.pop("asr_chunk_size", 20)
     no_repeat_ngram_size = args.pop("no_repeat_ngram_size", 1)
     name = args.pop("name", "vad_test")
-    output_dir= args.pop("output_dir")
+    output_dir= args.pop("output_dir", None)
     
     
     vad_options = DEFAULT_VAD_OPTIONS
@@ -107,10 +107,7 @@ def vad_only(args):
         "이 노래는 제가 부르는 노래입니다.",
         "아이유의 러브게임"
     ]
-    def is_ghost_pattern(text):
-        if text in GHOST_PATTERNS:
-            return True
-        return False 
+
     for segment in before_merge:
         start, end = segment # (0.132, 3.232)
         f1 = int(start * SAMPLE_RATE)
@@ -124,27 +121,25 @@ def vad_only(args):
         output = model.transcribe(current_section, chunk_size=asr_chunk_size, language='ko')
         try:
             cur_text = output["segments"][0]['text'].strip()
-            if is_ghost_pattern(cur_text):
-                continue
-            else:
-                merged_output["segments"].append(
-                    {
-                        "start": start,
-                        "end": end,
-                        "text": output["segments"][0]['text'].strip()
-                    }
-                )
+            merged_output["segments"].append(
+                {
+                    "start": start,
+                    "end": end,
+                    "text": cur_text
+                }
+            )
         except Exception as e:
             print(e)
-    printer.pprint(merged_output)
-    vtt_writer = WriteVTT(output_dir=f"{output_dir}")
-    vtt_options = {
-            "max_line_width": 1000,
-            "max_line_count": 100,
-            "highlight_words": False, 
-        }
-    vtt_writer(merged_output, audio_path=audio, options=vtt_options, name=name)
-    
+    # printer.pprint(merged_output)
+    if output_dir:
+        vtt_writer = WriteVTT(output_dir=f"{output_dir}")
+        vtt_options = {
+                "max_line_width": 1000,
+                "max_line_count": 100,
+                "highlight_words": False, 
+            }
+        vtt_writer(merged_output, audio_path=audio, options=vtt_options, name=name)
+    return merged_output
         
 if __name__ == "__main__":
     import argparse
@@ -156,8 +151,8 @@ if __name__ == "__main__":
     parser.add_argument("--asr_chunk_size", type=int, default=20)
     
     parser.add_argument("--no_repeat_ngram_size", type=int, default=0)
-    parser.add_argument("--name", type=str, default="vad_test")
-    parser.add_argument("--output_dir", type=str, default="/home/ubuntu/vad_test")
+    parser.add_argument("--name", type=str, default="vad_test") # default="/home/ubuntu/vad_test"
+    parser.add_argument("--output_dir", type=str)
     args = parser.parse_args()
     args = args.__dict__
     vad_only(args) 
