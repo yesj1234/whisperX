@@ -34,8 +34,7 @@ class WhisperModel(faster_whisper.WhisperModel):
     '''
 
     def generate_segment_batched(self, features: np.ndarray, tokenizer: faster_whisper.tokenizer.Tokenizer, options: faster_whisper.transcribe.TranscriptionOptions, encoder_output = None):
-        # batch_size = features.shape[0]
-        batch_size = 1
+        batch_size = features.shape[0]
         all_tokens = []
         prompt_reset_since = 0
         if options.initial_prompt is not None:
@@ -145,7 +144,7 @@ class FasterWhisperPipeline(Pipeline):
         return preprocess_kwargs, {}, {}
 
     def preprocess(self, audio):
-        # audio = audio['inputs']
+        audio = audio['inputs']
         model_n_mels = self.model.feat_kwargs.get("feature_size")
         features = log_mel_spectrogram(
             audio,
@@ -158,24 +157,7 @@ class FasterWhisperPipeline(Pipeline):
         outputs = self.model.generate_segment_batched(model_inputs['inputs'], self.tokenizer, self.options)
         return {'text': outputs}
 
-    def is_ghost_pattern(self,text):
-        if text in GHOST_PATTERNS:
-            return True
-        return False
-    
-    def filter_lang(self, text):
-        if self.preset_language == 'ko':
-            not_allowed = re.compile('[^a-zA-Z\sㄱ-ㅎㅏ-ㅣ가-힣0-9\.\,\/\?\:\;\"\'\[\]\{\}\~\`\!\@\#\$\%\^\&\*\(\)\-\_\=\+]+')
-            if re.match(not_allowed, text): # if there is no match this returns none
-                return False
-            return True
     def postprocess(self, model_outputs):
-        # print(model_outputs) # {'text': [' 한 부부와 함께 순둥순둥한 얼굴에 리트리버가 제작진을 맞아주는데']}
-        text = model_outputs['text'][0].strip()
-        if self.is_ghost_pattern(text):
-            model_outputs['text'][0] = "HALLUCINATION DETECTED"
-        if not self.filter_lang(text):
-            model_outputs['text'][0] = "NOT ALLOWED PATTERN DETECTED"
         return model_outputs
 
     def get_iterator(
@@ -194,7 +176,7 @@ class FasterWhisperPipeline(Pipeline):
         return final_iterator
 
     def transcribe(
-        self, audio: Union[str, np.ndarray], batch_size=None, num_workers=0, language=None, task=None, chunk_size=30, print_progress = False, combined_progress=False
+        self, audio: Union[str, np.ndarray], batch_size=None, num_workers=0, language=None, task=None, outer_chunk_size=5, inner_chunk_size=20, print_progress = False, combined_progress=False
     ) -> TranscriptionResult:
         if isinstance(audio, str):
             audio = load_audio(audio)
@@ -203,16 +185,31 @@ class FasterWhisperPipeline(Pipeline):
                 f1 = int(seg['start'] * SAMPLE_RATE)
                 f2 = int(seg['end'] * SAMPLE_RATE)
                 yield {'inputs': audio[f1:f2]}
-
+            
+                
         vad_segments = self.vad_model({"waveform": torch.from_numpy(audio).unsqueeze(0), "sample_rate": SAMPLE_RATE})
-        
+        # merge by duration_chunk_size which is 20. 
         vad_segments = merge_chunks(
             vad_segments,
-            chunk_size,
+            outer_chunk_size,
             onset=self._vad_params["vad_onset"],
             offset=self._vad_params["vad_offset"],
         )
         
+        final_segments = []
+        
+        for seg in vad_segments:
+            f1 = int(seg['start'] * SAMPLE_RATE)
+            f2 = int(seg['end'] * SAMPLE_RATE)
+            inner_segments = self.vad_model({"waveform": torch.from_numpy(audio[f1:f2]).unsqueeze(0), "sample_rate": SAMPLE_RATE})
+            inner_segments = merge_chunks(inner_segments, inner_chunk_size, onset=self._vad_params["vad_onset"], offset=self._vad_params["vad_offset"])
+            for inner_seg in inner_segments:
+                final_segments.append({
+                    "start": seg['start'] + inner_seg['start'],
+                    "end": seg['start'] + inner_seg['end'],
+                    "segments": inner_seg["segments"]
+                })
+                
         if self.tokenizer is None:
             language = language or self.detect_language(audio)
             task = task or "transcribe"
@@ -226,7 +223,7 @@ class FasterWhisperPipeline(Pipeline):
                 self.tokenizer = faster_whisper.tokenizer.Tokenizer(self.model.hf_tokenizer,
                                                                     self.model.model.is_multilingual, task=task,
                                                                     language=language)
-                
+        
         if self.suppress_numerals:
             previous_suppress_tokens = self.options.suppress_tokens
             numeral_symbol_tokens = find_numeral_symbol_tokens(self.tokenizer)
@@ -238,34 +235,28 @@ class FasterWhisperPipeline(Pipeline):
         segments: List[SingleSegment] = []
         batch_size = batch_size or self._batch_size
         
-        total_segments = len(vad_segments)
-        
-        result_for_single = self.__call__(audio, batch_size=batch_size, num_workers=num_workers)
-        print(result_for_single)
-        segments.append(
-            {
-                'text': result_for_single['text'][0],
-                'start': 0, # not required here.
-                'end': 0 # not required here 
-            }
-        )
-        # for idx, out in enumerate(self.__call__(audio, batch_size=batch_size, num_workers=num_workers)): # data(audio, vad_segments)
-        #     # if print_progress:
-        #     #     base_progress = ((idx + 1) / total_segments) * 100
-        #     #     percent_complete = base_progress / 2 if combined_progress else base_progress
-        #     #     print(f"Progress: {percent_complete:.2f}%...")
+        # total_segments = len(vad_segments)
+        total_segments = len(final_segments)
+        for idx, out in enumerate(self.__call__(data(audio, final_segments), batch_size=batch_size, num_workers=num_workers)):
+            if print_progress:
+                base_progress = ((idx + 1) / total_segments) * 100
+                percent_complete = base_progress / 2 if combined_progress else base_progress
+                print(f"Progress: {percent_complete:.2f}%...")
             
-        #     text = out['text']
-        #     if batch_size in [0, 1, None]:
-        #         text = text[0]
-        #     segments.append(
-        #         {
-        #             "text": text,
-        #             "start": round(vad_segments[idx]['start'], 3),
-        #             "end": round(vad_segments[idx]['end'], 3)
-        #         }
-            # )
-        # printer.pprint(segments)
+            text = out['text']
+            if batch_size in [0, 1, None]:
+                text = text[0]
+            try:
+                segments.append(
+                    {
+                        "text": text,
+                        "start": round(final_segments[idx]['start'], 3),
+                        "end": round(final_segments[idx]['end'], 3)
+                    }
+                )
+            except Exception as e:
+                print(idx)
+                print(traceback.print_tb(e.__traceback__))
         # revert the tokenizer if multilingual inference is enabled
         if self.preset_language is None:
             self.tokenizer = None

@@ -173,6 +173,7 @@ class FasterWhisperPipeline(Pipeline):
     def transcribe(
         self, audio: Union[str, np.ndarray], batch_size=None, num_workers=0, language=None, task=None, chunk_size=30, print_progress = False, combined_progress=False
     ) -> TranscriptionResult:
+        print("Calling Transcribe from asr_origin")
         if isinstance(audio, str):
             audio = load_audio(audio)
 

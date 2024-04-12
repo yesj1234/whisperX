@@ -267,7 +267,8 @@ def merge_vad(vad_arr, pad_onset=0.0, pad_offset=0.0, min_duration_off=0.0, min_
 
 def merge_chunks(
     segments,
-    chunk_size: int = 5,
+    duration_chunk_size: int = 20,
+    merge_chunk_size: int = 5,
     onset: float = 0.5,
     offset: Optional[float] = None,
 ):
@@ -279,9 +280,9 @@ def merge_chunks(
     seg_idxs = []
     speaker_idxs = []
 
-    assert chunk_size > 0  
+    assert duration_chunk_size > 0 and merge_chunk_size > 0 
     
-    binarize = Binarize(max_duration=chunk_size, onset=onset, offset=offset)
+    binarize = Binarize(max_duration=duration_chunk_size, onset=onset, offset=offset)
     segments = binarize(segments)
     segments_list = []
     for speech_turn in segments.get_timeline():
@@ -293,9 +294,10 @@ def merge_chunks(
     # assert segments_list, "segments_list is empty."
     # Make sur the starting point is the start of the segment.
     curr_start = segments_list[0].start
-    
+    # printer.pprint(segments_list)
+    printer.pprint(len(segments_list))
     for seg in segments_list:
-        if seg.end - curr_start > chunk_size and curr_end-curr_start > 0:
+        if seg.end - curr_start > merge_chunk_size and curr_end-curr_start > 0:
             merged_segments.append({
                 "start": curr_start,
                 "end": curr_end,
@@ -313,4 +315,6 @@ def merge_chunks(
                 "end": curr_end,
                 "segments": seg_idxs,
             })    
+    # printer.pprint(merged_segments)
+    printer.pprint(len(merged_segments))
     return merged_segments

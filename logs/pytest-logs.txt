@@ -1,0 +1,45 @@
+WARNING  speechbrain.utils.train_logger:train_logger.py:264 torchvision is not available - cannot save figures
+INFO     pytorch_lightning.utilities.migration.utils:utils.py:154 Lightning automatically upgraded your loaded checkpoint from v1.5.4 to v2.2.1. To apply the upgrade to your files permanently, run `python -m pytorch_lightning.utilities.upgrade_checkpoint ../.cache/torch/whisperx-vad-segmentation.bin`
+CRITICAL test_chunk_sizes:test_chunk_sizes.py:60 time elapsed: 44.39391374588013 | file: /home/ubuntu/whisper-hyper-wav/entertainment/entertainment_1.wav
+CRITICAL test_chunk_sizes:test_chunk_sizes.py:60 time elapsed: 34.10675263404846 | file: /home/ubuntu/whisper-hyper-wav/entertainment/entertainment_8.wav
+CRITICAL test_chunk_sizes:test_chunk_sizes.py:60 time elapsed: 35.085899114608765 | file: /home/ubuntu/whisper-hyper-wav/entertainment/entertainment_2.wav
+CRITICAL test_chunk_sizes:test_chunk_sizes.py:60 time elapsed: 40.11673665046692 | file: /home/ubuntu/whisper-hyper-wav/entertainment/entertainment_3.wav
+CRITICAL test_chunk_sizes:test_chunk_sizes.py:60 time elapsed: 35.43006372451782 | file: /home/ubuntu/whisper-hyper-wav/entertainment/entertainment_7.wav
+CRITICAL test_chunk_sizes:test_chunk_sizes.py:60 time elapsed: 43.93912672996521 | file: /home/ubuntu/whisper-hyper-wav/entertainment/entertainment_6.wav
+CRITICAL test_chunk_sizes:test_chunk_sizes.py:60 time elapsed: 55.10522150993347 | file: /home/ubuntu/whisper-hyper-wav/entertainment/entertainment_10.wav
+CRITICAL test_chunk_sizes:test_chunk_sizes.py:60 time elapsed: 39.21951484680176 | file: /home/ubuntu/whisper-hyper-wav/entertainment/entertainment_4.wav
+CRITICAL test_chunk_sizes:test_chunk_sizes.py:60 time elapsed: 35.85586953163147 | file: /home/ubuntu/whisper-hyper-wav/entertainment/entertainment_9.wav
+CRITICAL test_chunk_sizes:test_chunk_sizes.py:60 time elapsed: 40.10735559463501 | file: /home/ubuntu/whisper-hyper-wav/entertainment/entertainment_5.wav
+INFO     pytorch_lightning.utilities.migration.utils:utils.py:154 Lightning automatically upgraded your loaded checkpoint from v1.5.4 to v2.2.1. To apply the upgrade to your files permanently, run `python -m pytorch_lightning.utilities.upgrade_checkpoint ../.cache/torch/whisperx-vad-segmentation.bin`
+CRITICAL test_chunk_sizes:test_chunk_sizes.py:60 time elapsed: 45.848586320877075 | file: /home/ubuntu/whisper-hyper-wav/entertainment/entertainment_1.wav
+CRITICAL test_chunk_sizes:test_chunk_sizes.py:60 time elapsed: 35.50745630264282 | file: /home/ubuntu/whisper-hyper-wav/entertainment/entertainment_8.wav
+CRITICAL test_chunk_sizes:test_chunk_sizes.py:60 time elapsed: 36.185112714767456 | file: /home/ubuntu/whisper-hyper-wav/entertainment/entertainment_2.wav
+CRITICAL test_chunk_sizes:test_chunk_sizes.py:60 time elapsed: 40.954400062561035 | file: /home/ubuntu/whisper-hyper-wav/entertainment/entertainment_3.wav
+CRITICAL test_chunk_sizes:test_chunk_sizes.py:60 time elapsed: 35.736717224121094 | file: /home/ubuntu/whisper-hyper-wav/entertainment/entertainment_7.wav
+CRITICAL test_chunk_sizes:test_chunk_sizes.py:60 time elapsed: 44.34886908531189 | file: /home/ubuntu/whisper-hyper-wav/entertainment/entertainment_6.wav
+CRITICAL test_chunk_sizes:test_chunk_sizes.py:60 time elapsed: 56.18759059906006 | file: /home/ubuntu/whisper-hyper-wav/entertainment/entertainment_10.wav
+CRITICAL test_chunk_sizes:test_chunk_sizes.py:60 time elapsed: 40.25050091743469 | file: /home/ubuntu/whisper-hyper-wav/entertainment/entertainment_4.wav
+CRITICAL test_chunk_sizes:test_chunk_sizes.py:60 time elapsed: 36.02226161956787 | file: /home/ubuntu/whisper-hyper-wav/entertainment/entertainment_9.wav
+CRITICAL test_chunk_sizes:test_chunk_sizes.py:60 time elapsed: 40.5535032749176 | file: /home/ubuntu/whisper-hyper-wav/entertainment/entertainment_5.wav
+INFO     pytorch_lightning.utilities.migration.utils:utils.py:154 Lightning automatically upgraded your loaded checkpoint from v1.5.4 to v2.2.1. To apply the upgrade to your files permanently, run `python -m pytorch_lightning.utilities.upgrade_checkpoint ../.cache/torch/whisperx-vad-segmentation.bin`
+CRITICAL test_chunk_sizes:test_chunk_sizes.py:60 time elapsed: 45.79966402053833 | file: /home/ubuntu/whisper-hyper-wav/entertainment/entertainment_1.wav
+CRITICAL test_chunk_sizes:test_chunk_sizes.py:60 time elapsed: 36.51940393447876 | file: /home/ubuntu/whisper-hyper-wav/entertainment/entertainment_8.wav
+CRITICAL test_chunk_sizes:test_chunk_sizes.py:60 time elapsed: 36.67570614814758 | file: /home/ubuntu/whisper-hyper-wav/entertainment/entertainment_2.wav
+CRITICAL test_chunk_sizes:test_chunk_sizes.py:60 time elapsed: 41.17097520828247 | file: /home/ubuntu/whisper-hyper-wav/entertainment/entertainment_3.wav
+CRITICAL test_chunk_sizes:test_chunk_sizes.py:60 time elapsed: 35.57058310508728 | file: /home/ubuntu/whisper-hyper-wav/entertainment/entertainment_7.wav
+CRITICAL test_chunk_sizes:test_chunk_sizes.py:60 time elapsed: 45.089566230773926 | file: /home/ubuntu/whisper-hyper-wav/entertainment/entertainment_6.wav
+CRITICAL test_chunk_sizes:test_chunk_sizes.py:60 time elapsed: 56.48883128166199 | file: /home/ubuntu/whisper-hyper-wav/entertainment/entertainment_10.wav
+CRITICAL test_chunk_sizes:test_chunk_sizes.py:60 time elapsed: 40.57128167152405 | file: /home/ubuntu/whisper-hyper-wav/entertainment/entertainment_4.wav
+CRITICAL test_chunk_sizes:test_chunk_sizes.py:60 time elapsed: 36.406102895736694 | file: /home/ubuntu/whisper-hyper-wav/entertainment/entertainment_9.wav
+CRITICAL test_chunk_sizes:test_chunk_sizes.py:60 time elapsed: 40.79589867591858 | file: /home/ubuntu/whisper-hyper-wav/entertainment/entertainment_5.wav
+INFO     pytorch_lightning.utilities.migration.utils:utils.py:154 Lightning automatically upgraded your loaded checkpoint from v1.5.4 to v2.2.1. To apply the upgrade to your files permanently, run `python -m pytorch_lightning.utilities.upgrade_checkpoint ../.cache/torch/whisperx-vad-segmentation.bin`
+CRITICAL test_chunk_sizes:test_chunk_sizes.py:60 time elapsed: 47.020283699035645 | file: /home/ubuntu/whisper-hyper-wav/entertainment/entertainment_1.wav
+CRITICAL test_chunk_sizes:test_chunk_sizes.py:60 time elapsed: 36.48087525367737 | file: /home/ubuntu/whisper-hyper-wav/entertainment/entertainment_8.wav
+CRITICAL test_chunk_sizes:test_chunk_sizes.py:60 time elapsed: 36.81848096847534 | file: /home/ubuntu/whisper-hyper-wav/entertainment/entertainment_2.wav
+CRITICAL test_chunk_sizes:test_chunk_sizes.py:60 time elapsed: 42.96532964706421 | file: /home/ubuntu/whisper-hyper-wav/entertainment/entertainment_3.wav
+CRITICAL test_chunk_sizes:test_chunk_sizes.py:60 time elapsed: 36.467084884643555 | file: /home/ubuntu/whisper-hyper-wav/entertainment/entertainment_7.wav
+CRITICAL test_chunk_sizes:test_chunk_sizes.py:60 time elapsed: 45.69624996185303 | file: /home/ubuntu/whisper-hyper-wav/entertainment/entertainment_6.wav
+CRITICAL test_chunk_sizes:test_chunk_sizes.py:60 time elapsed: 58.30177855491638 | file: /home/ubuntu/whisper-hyper-wav/entertainment/entertainment_10.wav
+CRITICAL test_chunk_sizes:test_chunk_sizes.py:60 time elapsed: 41.12210035324097 | file: /home/ubuntu/whisper-hyper-wav/entertainment/entertainment_4.wav
+CRITICAL test_chunk_sizes:test_chunk_sizes.py:60 time elapsed: 37.408655881881714 | file: /home/ubuntu/whisper-hyper-wav/entertainment/entertainment_9.wav
+CRITICAL test_chunk_sizes:test_chunk_sizes.py:60 time elapsed: 41.37456130981445 | file: /home/ubuntu/whisper-hyper-wav/entertainment/entertainment_5.wav

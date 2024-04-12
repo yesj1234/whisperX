@@ -34,7 +34,6 @@ def get_asr_options(options):
     
 
 def sweep(args):
-    args = args.__dict__
     audio = args.pop("audio")
     output_dir = args.pop("output_dir")
     print_progress = args.pop("print_progress")
@@ -43,8 +42,11 @@ def sweep(args):
     length_penalty = args.pop("length_penalty")
     repetition_penalty = args.pop("repetition_penalty")
     
+    # args for 
+    is_with_default = args.pop("is_with_default", True)
     do_beam_size = args.pop("beam_size")
     do_temperature = args.pop("temperature")
+    
     if do_beam_size and do_temperature:
         raise ValueError("Choose only one option to sweep. Both the beam size and temperature can not be sweeped at the same time.")
 
@@ -52,9 +54,12 @@ def sweep(args):
         "vad_onset": vad_onset,
         "vad_offset": vad_offset, 
     }
+    if is_with_default:
+        pass
+     
     if do_beam_size:
-        beam_sizes = np.arange(5, 21, 5)
-        patiences = np.arange(1, 2, 0.2)
+        beam_sizes = np.arange(5, 25, 5)
+        patiences = np.arange(1, 3, 0.5)
         param_combinations = list(product(beam_sizes, patiences))
         y, sr = librosa.load(audio, sr=16000)
         for beam_size, patience in param_combinations:
@@ -70,7 +75,6 @@ def sweep(args):
                 os.makedirs(output_dir, exist_ok=True)
             WriteVTT(output_dir=output_dir)(result=result, audio_path=audio, options=VTT_OPTIONS, name=name)
             del model 
-            gc.collect() 
             
 
     if do_temperature:
@@ -93,14 +97,14 @@ def sweep(args):
                 os.makedirs(output_dir, exist_ok=True)
             WriteVTT(output_dir=output_dir)(result=result, audio_path=audio, options=VTT_OPTIONS, name=name)
             del model 
-            gc.collect() 
     
 
 if __name__ == "__main__":
     import argparse 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--audio", type=str)
-    parser.add_argument("--output_dir", type=str)
+    parser.add_argument("--audio", type=str, help="single wav file to decode.")
+    parser.add_argument("--audios", type=str, help="multiple wav files to decode. pass folder path containing wav files.")
+    parser.add_argument("--output_dir", type=str, required=True)
     parser.add_argument("--print_progress", action='store_true')
     # Common hyperparamters used for both combinations 
     parser.add_argument("--vad_onset", type=float, default=0.5)
@@ -112,4 +116,24 @@ if __name__ == "__main__":
     parser.add_argument("--beam_size", action='store_true')
     parser.add_argument("--temperature", action='store_true')
     args = parser.parse_args()
-    sweep(args)
+    args = args.__dict__
+    
+    if args.get("audio") and args.get("audios"):
+        raise ValueError("pass single audio wav via audio option or pass folder path of the wav files.")
+    
+    if args.get("audios"):
+        for (root, dirs, files) in os.walk(args["audios"]):
+            if files:
+                prefix = root
+                for file in files:
+                    basename, ext = os.path.splitext(file)
+                    if ext in ['.wav']:
+                        temp_args = {k: v for k, v in args.items()}
+                        temp_output_dir = temp_args["output_dir"]
+                        temp_args['audio'] = os.path.join(prefix, file)
+                        temp_args['output_dir'] = os.path.join(temp_output_dir, basename)
+                        printer.pprint(temp_args)
+                        sweep(temp_args)
+    else:
+        args = args.__dict__
+        sweep(args)
